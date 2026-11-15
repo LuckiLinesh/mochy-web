@@ -1,6 +1,7 @@
 import { useState } from 'react'
 
-const API = (import.meta as any).env?.VITE_API_URL || ''
+const API = '' // search uses Vercel (relative)
+const STREAM_API = 'https://mochy-web-vvbp.onrender.com' // audio streaming uses Render backend
 
 type Track = { id: string; title: string; artists: { name: string }[]; duration: number; thumbnail: string }
 
@@ -26,7 +27,7 @@ export default function App() {
   const play = (t: Track) => {
     setCurrent(t)
     // Try Vercel stream first, fall back to local PC backend
-    const a = new Audio(`/api/stream?id=${t.id}`)
+    const a = new Audio(`${STREAM_API}/audio/${t.id}`)
     a.onerror = () => {
       // Fallback to local backend
       const a2 = new Audio(`http://192.168.100.181:3000/audio/${t.id}`)
@@ -49,7 +50,7 @@ export default function App() {
 
   const download = (t: Track) => {
     const a = document.createElement('a')
-    a.href = `/api/stream?id=${t.id}`
+    a.href = `${STREAM_API}/audio/${t.id}`
     a.download = `${t.title}.m4a`
     a.click()
   }
