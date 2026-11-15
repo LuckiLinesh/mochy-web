@@ -4,11 +4,10 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev:server": "npx tsx server/index.ts",
-    "dev:client": "npx vite",
+    "build": "vite build",
     "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
-    "build": "npx vite build",
-    "start": "node server/index.js"
+    "dev:server": "tsx server/index.ts",
+    "dev:client": "vite"
   },
   "keywords": [],
   "author": "",

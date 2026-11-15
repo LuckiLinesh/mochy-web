@@ -19,9 +19,13 @@ fs.mkdirSync(DOWNLOAD_DIR, { recursive: true })
 
 // yt-dlp path
 function ytdlpPath() {
+  // Docker/Linux
+  if (fs.existsSync('/usr/local/bin/yt-dlp')) return '/usr/local/bin/yt-dlp'
+  if (fs.existsSync('/usr/bin/yt-dlp')) return '/usr/bin/yt-dlp'
+  // Windows local
   const bundled = path.join(process.cwd(), 'bin', 'yt-dlp.exe')
   if (fs.existsSync(bundled)) return bundled
-  return 'yt-dlp.exe'
+  return 'yt-dlp'
 }
 
 let yt: any = null
