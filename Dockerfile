@@ -10,7 +10,7 @@ WORKDIR /app
 
 # Copy package files
 COPY package*.json ./
-RUN npm install --production
+RUN npm install
 
 # Copy server code
 COPY server/ ./server/
@@ -21,4 +21,4 @@ RUN mkdir -p cache/audio downloads
 ENV PORT=3000
 EXPOSE 3000
 
-CMD ["npx", "tsx", "server/index.ts"]
+CMD ["./node_modules/.bin/tsx", "server/index.ts"]
