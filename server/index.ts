@@ -328,7 +328,7 @@ app.get('/api/download/:id', async (req, res) => {
 })
 
 // Serve frontend
-app.use(express.static(path.join(process.cwd(), 'client', 'dist')))
+app.use(express.static(path.join(process.cwd(), 'dist')))
 
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`Mochy Web running at http://localhost:${PORT}`)
