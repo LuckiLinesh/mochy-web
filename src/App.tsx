@@ -25,7 +25,15 @@ export default function App() {
 
   const play = (t: Track) => {
     setCurrent(t)
+    // Try Vercel stream first, fall back to local PC backend
     const a = new Audio(`/api/stream?id=${t.id}`)
+    a.onerror = () => {
+      // Fallback to local backend
+      const a2 = new Audio(`http://192.168.100.181:3000/audio/${t.id}`)
+      if (audio) audio.pause()
+      a2.play().catch(() => {})
+      setAudio(a2)
+    }
     if (audio) { audio.pause() }
     a.play().catch(() => {})
     setAudio(a)
