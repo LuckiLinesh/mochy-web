@@ -3,7 +3,7 @@ import cors from 'cors'
 import { Innertube, UniversalCache, Log } from 'youtubei.js'
 import fs from 'node:fs'
 import path from 'node:path'
-import { spawn } from 'node:child_process'
+import { spawn, execSync } from 'node:child_process'
 
 Log.setLevel(Log.Level.NONE)
 
@@ -240,7 +240,11 @@ function findFile(id: string) {
 function ensure(id: string) {
   let e = entries.get(id)
   if (e) return e
-  const cached = findFile(id)
+  // Validate cached file - if too small, delete and re-download
+  let cached = findFile(id)
+  if (cached) {
+    try { const st = fs.statSync(cached); if (st.size < 50000) { fs.unlinkSync(cached); cached = null } } catch { cached = null }
+  }
   e = { file: cached ?? path.join(CACHE_DIR, id + '.m4a'), done: !!cached, total: 0, error: undefined }
   if (cached) { try { e.total = fs.statSync(cached).size } catch {} }
   entries.set(id, e)
@@ -272,7 +276,8 @@ app.get('/audio/:id', async (req, res) => {
   let stat: fs.Stats
   try { stat = fs.statSync(e.file) } catch { res.status(404).end(); return }
   const total = e.done ? stat.size : (e.total || stat.size)
-  const range = req.headers.range
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate')
+  res.setHeader('Pragma', 'no-cache')
   if (range) {
     const m = range.match(/bytes=(\d+)-(\d*)/)
     if (m) {
@@ -338,6 +343,16 @@ app.get('/download/:id', async (req, res) => {
   res.setHeader('Content-Disposition', `attachment; filename="${safe}"`)
   res.setHeader('Content-Type', 'audio/mp4')
   fs.createReadStream(e.file).pipe(res)
+})
+
+// Health check
+app.get('/api/health', (_req, res) => {
+  try {
+    const version = execSync('yt-dlp --version', { timeout: 10000 }).toString().trim()
+    res.json({ ok: true, ytdlp: version, platform: process.platform })
+  } catch (e: any) {
+    res.json({ ok: false, error: e?.message, platform: process.platform })
+  }
 })
 
 app.listen(PORT, '0.0.0.0', () => {
