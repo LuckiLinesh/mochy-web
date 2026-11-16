@@ -28,17 +28,19 @@ export const api = {
     url: async (id: string) => ({ url: `${STREAM_API}/audio/${id}`, error: undefined }),
     prefetch: () => Promise.resolve(true),
     saveDownload: async (id: string, track: any) => {
-      const res = await fetch(`${STREAM_API}/audio/${id}`)
-      const blob = await res.blob()
-      const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
-      a.href = url
+      a.href = `${STREAM_API}/download/${id}`
       a.download = `${track.title}.m4a`
       document.body.appendChild(a)
       a.click()
       document.body.removeChild(a)
-      URL.revokeObjectURL(url)
-      return { id, track, path: '', size: blob.size, createdAt: Date.now() }
+      // record in downloads list
+      const item = { id, track, path: '', size: 0, createdAt: Date.now() }
+      const d = localStorage.getItem('mochy-downloads')
+      const arr = d ? JSON.parse(d) : []
+      arr.unshift(item)
+      localStorage.setItem('mochy-downloads', JSON.stringify(arr))
+      return item
     },
     deleteCache: () => Promise.resolve(),
     clearCache: () => Promise.resolve(),

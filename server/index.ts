@@ -327,8 +327,18 @@ app.get('/api/download/:id', async (req, res) => {
   fs.createReadStream(e.file).pipe(res)
 })
 
-// Serve frontend
-app.use(express.static(path.join(process.cwd(), 'dist')))
+// Download (with Content-Disposition for browser download)
+app.get('/download/:id', async (req, res) => {
+  const id = req.params.id
+  const e = ensure(id)
+  const waitStart = Date.now()
+  while (!e.done && !e.error && Date.now() - waitStart < 120000) await new Promise((r) => setTimeout(r, 200))
+  if (e.error) { res.status(500).json({ error: e.error }); return }
+  const safe = id + '.m4a'
+  res.setHeader('Content-Disposition', `attachment; filename="${safe}"`)
+  res.setHeader('Content-Type', 'audio/mp4')
+  fs.createReadStream(e.file).pipe(res)
+})
 
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`Mochy Web running at http://localhost:${PORT}`)
