@@ -355,7 +355,17 @@ app.get('/api/health', (_req, res) => {
   }
 })
 
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`Mochy Web running at http://localhost:${PORT}`)
-  console.log(`On your phone: http://<your-pc-ip>:${PORT}`)
+import https from 'node:https'
+import selfsigned from 'selfsigned'
+
+// Generate self-signed cert
+const attrs = [{ name: 'commonName', value: 'localhost' }]
+const pems = selfsigned.generate(attrs, { days: 365, keySize: 2048 })
+const httpsOptions = { key: pems.private, cert: pems.cert }
+
+// ... (rest of server code)
+
+https.createServer(httpsOptions, app).listen(PORT, '0.0.0.0', () => {
+  console.log(`Mochy Web running at https://localhost:${PORT}`)
+  console.log(`On your phone: https://<your-pc-ip>:${PORT}`)
 })
