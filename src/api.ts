@@ -1,6 +1,6 @@
 // Web API client replacing window.mochy (Electron IPC)
 const API = '' // same origin (Vercel) or use Render URL
-const STREAM_API = 'https://mochy-web-vvbp.onrender.com'
+const STREAM_API = 'http://192.168.100.181:3000'
 
 export const api = {
   settings: {
