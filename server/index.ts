@@ -345,8 +345,19 @@ app.get('/download/:id', async (req, res) => {
   fs.createReadStream(e.file).pipe(res)
 })
 
-// Health check
-app.get('/api/health', (_req, res) => {
+// Debug: try downloading a video
+app.get('/api/debug-download/:id', async (req, res) => {
+  const id = req.params.id
+  const { spawn } = require('node:child_process')
+  const proc = spawn('yt-dlp', ['--no-playlist', '--no-warnings', '--newline', '--force-ipv4', '-f', 'bestaudio[ext=m4a]/bestaudio', '-o', path.join(CACHE_DIR, '%(id)s.%(ext)s'), `https://music.youtube.com/watch?v=${id}`], { windowsHide: true })
+  let stdout = '', stderr = ''
+  proc.stdout.on('data', (d: Buffer) => { stdout += d.toString() })
+  proc.stderr.on('data', (d: Buffer) => { stderr += d.toString() })
+  proc.on('close', (code: number) => {
+    const files = fs.readdirSync(CACHE_DIR).filter((f: string) => f.startsWith(id))
+    res.json({ code, files, stdout: stdout.slice(-500), stderr: stderr.slice(-500) })
+  })
+})
   try {
     const version = execSync('yt-dlp --version', { timeout: 10000 }).toString().trim()
     res.json({ ok: true, ytdlp: version, platform: process.platform })
